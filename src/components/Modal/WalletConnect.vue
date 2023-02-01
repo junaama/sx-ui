@@ -20,7 +20,7 @@ const props = defineProps({
   initialState: Object
 });
 
-const emit = defineEmits(['connect', 'close']);
+const emit = defineEmits(['close']);
 
 const ignoreFormUpdates = ref(true);
 
@@ -29,15 +29,22 @@ const form = reactive(clone(DEFAULT_FORM_STATE));
 const { connect, logged, logout, loading } = useWalletConnect();
 const { web3 } = useWeb3();
 
-function handleSubmit() {
+async function handleSubmit() {
   const account = web3.value.account;
-  connect(account, form.uri);
-  emit('connect');
-  emit('close');
+  try {
+    await connect(account, form.uri);
+    emit('close');
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 async function handleDisconnect() {
-  await logout();
+  try {
+    await logout();
+  } catch (error) {
+    console.error(error);
+  }
   form.uri = DEFAULT_FORM_STATE.uri;
 }
 
