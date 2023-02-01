@@ -22,13 +22,11 @@ const props = defineProps({
 
 const emit = defineEmits(['connect', 'close']);
 
-const loading = ref(false);
-
 const ignoreFormUpdates = ref(true);
 
 const form = reactive(clone(DEFAULT_FORM_STATE));
 
-const { connect, logged, logout } = useWalletConnect();
+const { connect, logged, logout, loading } = useWalletConnect();
 const { web3 } = useWeb3();
 
 function handleSubmit() {
@@ -115,7 +113,7 @@ watch(
         <UiButton v-if="logged" class="w-full !text-red" @click="handleDisconnect"
           >Log out</UiButton
         >
-        <UiButton v-else class="w-full" @click="handleSubmit">Connect</UiButton>
+        <UiButton v-else class="w-full" @click="handleSubmit" :loading="loading">Connect</UiButton>
       </div>
     </template>
   </UiModal>
