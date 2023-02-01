@@ -15,11 +15,13 @@ const modalState: Ref<{
   sendToken?: any;
   sendNft?: any;
   contractCall?: any;
+  walletConnect?: any;
 }> = ref({});
 const modalOpen = ref({
   sendToken: false,
   sendNft: false,
-  contractCall: false
+  contractCall: false,
+  walletConnect: false
 });
 
 const txs = computed({
@@ -48,7 +50,7 @@ function removeTx(index: number) {
   ]);
 }
 
-function openModal(type: 'sendToken' | 'sendNft' | 'contractCall') {
+function openModal(type: 'sendToken' | 'sendNft' | 'contractCall' | 'walletConnect' ) {
   editedTx.value = null;
   modalState.value[type] = null;
   modalOpen.value[type] = true;
@@ -68,13 +70,13 @@ function editTx(index: number) {
       <div
         class="mb-3 flex flex-no-wrap overflow-x-scroll no-scrollbar scrolling-touch items-start space-x-3"
       >
-        <a
+        <!-- <a
           class="px-4 py-3 border-b border rounded-lg block min-w-[165px]"
           @click="openModal('sendToken')"
         >
           <IH-stop />
           Send token
-        </a>
+        </a> -->
         <a
           class="px-4 py-3 border-b border rounded-lg block min-w-[165px]"
           @click="openModal('sendNft')"
@@ -88,6 +90,14 @@ function editTx(index: number) {
         >
           <IH-chip />
           Contract call
+        </a>
+        <a
+          class="px-4 py-3 border-b border rounded-lg block min-w-[165px]"
+          @click="openModal('walletConnect')"
+        >
+        <!-- @junaama NOTE: can't render arrow left square icon -->
+          <IH-arrow-circle-left />
+          WalletConnect
         </a>
       </div>
     </div>
@@ -137,6 +147,12 @@ function editTx(index: number) {
         :open="modalOpen.contractCall"
         :initial-state="modalState.contractCall"
         @close="modalOpen.contractCall = false"
+        @add="addTx"
+      />
+      <ModalWalletConnect
+        :open="modalOpen.walletConnect"
+        :initial-state="modalState.walletConnect"
+        @close="modalOpen.walletConnect = false"
         @add="addTx"
       />
     </teleport>
