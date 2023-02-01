@@ -20,13 +20,13 @@ const props = defineProps({
   initialState: Object
 });
 
-const emit = defineEmits(['close']);
+const emit = defineEmits(['add', 'close']);
 
 const ignoreFormUpdates = ref(true);
 
 const form = reactive(clone(DEFAULT_FORM_STATE));
 
-const { connect, logged, logout, loading } = useWalletConnect();
+const { connect, logged, logout, loading, currentTxRequest } = useWalletConnect();
 const { web3 } = useWeb3();
 
 async function handleSubmit() {
@@ -82,6 +82,17 @@ watch(
       ignoreFormUpdates.value = false;
     }
   }
+);
+
+watch(
+  () => currentTxRequest,
+  (txRequest) => {
+    console.log(txRequest, txRequest.value)
+    if (txRequest) {
+      emit('add', txRequest.value);
+    }
+  },
+  { deep: true }
 );
 </script>
 
