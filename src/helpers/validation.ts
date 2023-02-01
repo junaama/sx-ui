@@ -53,7 +53,7 @@ export function validateForm(schema, form): Record<string, string> {
       }
     }
   });
-
+  // @junaama TODO: Add format for wallet connect uri
   ajv.validate(schema, form);
 
   const output = {};
