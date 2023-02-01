@@ -5,13 +5,15 @@ import getProvider from '@snapshot-labs/snapshot.js/src/utils/provider';
 import { formatUnits } from '@ethersproject/units';
 import { getABI } from '@/helpers/etherscan';
 import { Interface } from '@ethersproject/abi';
+import { createContractCallTransaction } from '@/helpers/transactions';
 
 let connector;
+
 export function useWalletConnect() {
   const logged = ref(false);
   const loading = ref(false);
   const acc = ref('');
-  const requests = ref([])
+  const currentTxRequest = ref({});
 
   async function logout() {
     if (connector) {
@@ -26,15 +28,24 @@ export function useWalletConnect() {
     const iface = new Interface(abi);
     return JSON.parse(JSON.stringify(iface.parseTransaction(call)));
   }
+
   async function parseCall(call) {
     console.log('Call', call);
     if (call.method === 'eth_sendTransaction') {
-      console.log('Send transaction');
       const params = call.params[0];
       const abi = await getABI(params.to);
-      console.log('Got ABI contract');
       const tx = parseTransaction(params, abi);
       console.log('Tx', tx);
+      const txRequestForm = {
+        to: params.to,
+        amount: formatUnits(params.value || 0),
+        abi: abi,
+        method: tx.signature,
+        args: tx.args,
+        data: {call, tx}
+      }
+      const txRequest = createContractCallTransaction({form: txRequestForm})
+      currentTxRequest.value = txRequest
       return [
         {
           to: params.to,
@@ -51,6 +62,7 @@ export function useWalletConnect() {
     }
     return false;
   }
+
   async function connect(account, uri) {
     acc.value = account;
     if (!isAddress(account)) {
@@ -78,22 +90,21 @@ export function useWalletConnect() {
     });
     // call requests
     connector.on('call_request', async (error, payload) => {
-        console.log('Call request', error, payload);
-        if (error) throw error;
-        try {
-          const request: any = await parseCall(payload);
-          console.log('Request', request);
-          // @ts-ignore
-          if (request) requests.value.push(request);
-        } catch (e) {
-          console.log(e);
-        }
-      });
+      console.log('Call request', error, payload);
+      if (error) throw error;
+      try {
+        const request: any = await parseCall(payload);
+        console.log('Request', request);
+        // @ts-ignore
+        if (request) requests.value.push(request);
+      } catch (e) {
+        console.log(e);
+      }
+    });
     connector.on('disconnect', (error, payload) => {
-        console.log('disconnect', error, payload);
-        if (error) throw error;
-      });
-
+      console.log('disconnect', error, payload);
+      if (error) throw error;
+    });
   }
   return {
     connect,
@@ -101,6 +112,6 @@ export function useWalletConnect() {
     loading,
     acc,
     logout,
-    requests
+    currentTxRequest
   };
 }
